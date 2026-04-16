@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Hiragino Sans', 'Meiryo', sans-serif;
+  background: #e8eaed;
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+.card {
+  width: 360px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.header {
+  background: #1c3f60;
+  color: #fff;
+  padding: 11px 14px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.header .title { font-size: 15px; font-weight: bold; }
+.header .period { font-size: 11px; color: #7db3d6; margin-top: 4px; }
+.section {
+  padding: 10px 14px 11px;
+  border-bottom: 1px solid #efefef;
+}
+.section:last-of-type { border-bottom: none; }
+.section-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: #999;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.c-over  { color: #2a9658; }
+.c-near  { color: #d4860f; }
+.c-under { color: #c94040; }
+.b-over  { background: #2a9658; }
+.b-near  { background: #d4860f; }
+.b-under { background: #c94040; }
+.bar-wrap {
+  position: relative;
+  background: #f0f0f0;
+  border-radius: 3px;
+  height: 6px;
+}
+.bar-fill { position: absolute; top: 0; left: 0; border-radius: 3px; }
+.bar-target {
+  position: absolute;
+  left: calc(83.33% - 1px);
+  width: 2px;
+  background: #aaa;
+  border-radius: 1px;
+}
+.bar-scale-mid { position: relative; height: 10px; margin-top: 2px; }
+.bar-scale-mid .l0   { position:absolute; left:0;      font-size:8px; color:#ccc; }
+.bar-scale-mid .l100 { position:absolute; left:83.33%; font-size:8px; color:#bbb; transform:translateX(-50%); }
+.bar-scale-mid .l120 { position:absolute; right:0;     font-size:8px; color:#ccc; }
+.day-list { display: flex; flex-direction: column; gap: 7px; }
+.day-row-top { display: flex; align-items: baseline; gap: 0; margin-bottom: 3px; }
+.day-label { font-size: 12px; font-weight: 500; color: #333; width: 54px; flex-shrink: 0; }
+.day-amounts {
+  flex: 1; font-size: 10px; color: #999;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.day-amounts .actual { color: #444; font-weight: 500; }
+.pct-sm { font-size: 13px; font-weight: bold; width: 48px; text-align: right; flex-shrink: 0; }
+.day-highlight { background: #edf2f7; border-radius: 6px; padding: 5px 7px; margin: 0 -7px; }
+.summary-row { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 7px; }
+.pct-lg { font-size: 20px; font-weight: bold; line-height: 1; flex-shrink: 0; width: 68px; }
+.summary-detail { flex: 1; font-size: 11px; color: #555; line-height: 1.7; padding-bottom: 1px; }
+.summary-detail .amt { color: #333; font-weight: 500; }
+.summary-detail .sub { font-size: 10px; color: #999; }
+.cat-list { display: flex; flex-direction: column; gap: 7px; }
+.cat-row-top { display: flex; align-items: baseline; margin-bottom: 3px; gap: 6px; }
+.cat-name { font-size: 12px; font-weight: 500; color: #222; width: 90px; flex-shrink: 0; white-space: nowrap; }
+.cat-amounts {
+  flex: 1; font-size: 10px; color: #999;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cat-amounts .actual { color: #444; font-weight: 500; }
+.no-data { font-size: 11px; color: #bbb; text-align: center; padding: 8px 0; }
+.footer {
+  padding: 6px 14px 10px; font-size: 9px; color: #bbb;
+  display: flex; justify-content: space-between;
+}
+</style></head><body><div class="card"><div class="header"><div><div class="title">直売所本店 売上レポート</div><div class="period">2026/04/15（水）</div></div></div><div class="section"><div class="section-title">日次達成率（売上全体）</div><div class="day-list"><div><div class="day-row-top"><div class="day-label">4/13 月</div><div class="day-amounts"><span class="actual">115,194</span> / 128,497円</div><div class="pct-sm c-near">89.6%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-near" style="width:74.7%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="day-row-top"><div class="day-label">4/14 火</div><div class="day-amounts"><span class="actual">166,242</span> / 128,497円</div><div class="pct-sm c-over">129.4%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div class="day-highlight"><div class="day-row-top"><div class="day-label" style="color:#1c3f60;font-weight:700;width:auto;margin-right:4px;">4/15 水<span style="font-size:9px;font-weight:500;color:#7da0c0;margin-left:3px;">本日</span></div><div class="day-amounts"><span class="actual">173,120</span> / 128,497円</div><div class="pct-sm c-over">134.7%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div></div></div><div class="section"><div class="section-title">週間累計</div><div class="summary-row"><div class="pct-lg c-over">117.9%</div><div class="summary-detail"><span class="amt">実績 454,556円</span> / <span>目標 385,491円</span><br><span class="sub">平日3日×128,497　土日0日×262,286</span></div></div><div class="bar-wrap" style="height:8px;"><div class="bar-fill b-over" style="width:98.3%;height:8px;"></div><div class="bar-target" style="top:-3px;height:14px;"></div></div><div class="bar-scale-mid"><span class="l0">0</span><span class="l100">100%</span><span class="l120">120%</span></div></div><div class="section"><div class="section-title">週間累計（カテゴリー別）</div><div class="cat-list"><div><div class="cat-row-top"><div class="cat-name">ソフトクリーム</div><div class="cat-amounts"><span class="actual">50,268</span> / 43,998円</div><div class="pct-sm c-over">114.3%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:95.2%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">牛乳</div><div class="cat-amounts"><span class="actual">26,646</span> / 18,768円</div><div class="pct-sm c-over">142.0%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">アイスクリーム</div><div class="cat-amounts"><span class="actual">2,716</span> / 21,963円</div><div class="pct-sm c-under">12.4%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-under" style="width:10.3%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">ベーコン</div><div class="cat-amounts"><span class="actual">159,986</span> / 105,216円</div><div class="pct-sm c-over">152.1%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">卵</div><div class="cat-amounts"><span class="actual">53,050</span> / 34,839円</div><div class="pct-sm c-over">152.3%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">つくね・親鶏</div><div class="cat-amounts"><span class="actual">22,044</span> / 6,561円</div><div class="pct-sm c-over">336.0%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">餃子</div><div class="cat-amounts"><span class="actual">0</span> / 3,936円</div><div class="pct-sm c-under">0.0%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-under" style="width:0.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">フード・弁当</div><div class="cat-amounts"><span class="actual">7,950</span> / 15,111円</div><div class="pct-sm c-under">52.6%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-under" style="width:43.8%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div><div><div class="cat-row-top"><div class="cat-name">その他</div><div class="cat-amounts"><span class="actual">574,597</span> / 135,099円</div><div class="pct-sm c-over">425.3%</div></div><div class="bar-wrap" style="height:6px;"><div class="bar-fill b-over" style="width:100.0%;height:6px;"></div><div class="bar-target" style="top:-3px;height:12px;"></div></div></div></div></div><div class="section"><div class="section-title">月間累計（4/1〜4/15）</div><div class="summary-row"><div class="pct-lg c-under">76.0%</div><div class="summary-detail"><span class="amt">実績 1,872,408円</span> / <span>目標 2,462,611円</span><br><span class="sub">15日経過 / 30日　残15日</span></div></div><div class="bar-wrap" style="height:8px;"><div class="bar-fill b-under" style="width:63.4%;height:8px;"></div><div class="bar-target" style="top:-3px;height:14px;"></div></div><div class="bar-scale-mid"><span class="l0">0</span><span class="l100">100%</span><span class="l120">120%</span></div></div><div class="footer"><span>縦線 = 目標100%　グラフ最大 = 120%</span><span>データ元: 商品別売上CSV</span></div></div></body></html>
