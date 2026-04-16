@@ -19,7 +19,6 @@ from email.header import Header
 from email.mime.text import MIMEText
 from pathlib import Path
 
-import download_data
 import generate_report
 
 # ==============================================================
@@ -40,31 +39,20 @@ CSV_DIR  = BASE_DIR
 # ==============================================================
 
 
-def find_today_csv() -> Path | None:
-    """当日CSV（売上集計 or 商品別売上）を優先、なければ最新を返す"""
-    today = datetime.date.today().strftime("%Y%m%d")
-    today_patterns = [
-        CSV_DIR / f"売上集計_{today}-{today}.csv",
-        CSV_DIR / f"商品別売上_{today}-{today}.csv",
-        CSV_DIR / f"商品別売上(期間：{today}-{today}).csv",
-    ]
-    for p in today_patterns:
-        hits = glob.glob(str(p))
-        if hits:
-            return Path(hits[0])
-
+def find_csv() -> Path | None:
+    """日別売上 or 商品別売上 or 売上集計 CSVを探す"""
     all_patterns = [
+        str(CSV_DIR / "日別売上(年月*).csv"),
         str(CSV_DIR / "売上集計_*.csv"),
         str(CSV_DIR / "商品別売上_*.csv"),
         str(CSV_DIR / "商品別売上(期間*).csv"),
     ]
-    files = []
     for pat in all_patterns:
-        files.extend(glob.glob(pat))
-    if files:
-        latest = Path(sorted(files)[-1])
-        print(f"[警告] 当日CSVが見つからないため最新ファイルを使用: {latest.name}")
-        return latest
+        files = glob.glob(pat)
+        if files:
+            latest = Path(sorted(files)[-1])
+            print(f"[OK] CSV確認: {latest.name}")
+            return latest
     return None
 
 
@@ -119,11 +107,9 @@ def main():
         print('  [Environment]::SetEnvironmentVariable("GMAIL_APP_PASS", "xxxx xxxx xxxx xxxx", "User")')
         sys.exit(1)
 
-    csv_file = find_today_csv()
-    if csv_file is None:
+    if find_csv() is None:
         print("[エラー] 実績CSVが見つかりません。処理を中断します。")
         sys.exit(1)
-    print(f"[OK] CSV確認: {csv_file.name}")
 
     try:
         html_path, summary = generate_report.main()
@@ -133,13 +119,7 @@ def main():
         print(f"[エラー] レポート生成失敗: {e}")
         sys.exit(1)
 
-    report_url = ""
-    folder_id = os.environ.get("DRIVE_FOLDER_ID")
-    if folder_id:
-        try:
-            report_url = download_data.upload_html(html_path, folder_id)
-        except Exception as e:
-            print(f"[警告] HTMLアップロード失敗（メール送信は続行）: {e}")
+    report_url = os.environ.get("REPORT_URL", "")
 
     rd = summary["report_date"]
     subject = f"【直売所 日次売上レポート】{rd.strftime('%Y/%m/%d')}"

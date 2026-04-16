@@ -87,8 +87,33 @@ def load_targets() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def load_daily_sales() -> pd.DataFrame:
+    """日別売上(年月：*.csv) から日次売上合計を読み込む（最も正確なソース）"""
+    files = sorted(glob.glob(str(BASE_DIR / "日別売上(年月*).csv")))
+    if not files:
+        files = sorted(glob.glob(str(BASE_DIR / "売上集計_*.csv")))
+    if not files:
+        return pd.DataFrame()
+
+    dfs = []
+    for f in files:
+        try:
+            df = pd.read_csv(f, encoding="cp932")
+        except UnicodeDecodeError:
+            df = pd.read_csv(f, encoding="utf-8")
+        dfs.append(df)
+
+    combined = pd.concat(dfs, ignore_index=True)
+    col_date, col_sales = combined.columns[0], combined.columns[1]
+    combined["日付"] = pd.to_datetime(combined[col_date], errors="coerce").dt.date
+    combined["売上"] = pd.to_numeric(combined[col_sales], errors="coerce")
+    result = combined[["日付", "売上"]].dropna()
+    result = result[result["売上"] > 0]
+    return result
+
+
 def load_product_sales() -> pd.DataFrame:
-    """直売所売上/商品別売上_*.csv および 商品別売上(期間：...).csv を集計"""
+    """単日の商品別売上CSVからカテゴリー別内訳を集計（複数日レンジは除外）"""
     patterns = [
         str(BASE_DIR / "商品別売上_*.csv"),
         str(BASE_DIR / "商品別売上(期間*).csv"),
@@ -109,13 +134,16 @@ def load_product_sales() -> pd.DataFrame:
         start_dt = datetime.datetime.strptime(m.group(1), "%Y%m%d").date()
         end_dt = datetime.datetime.strptime(m.group(2), "%Y%m%d").date()
 
+        if start_dt != end_dt:
+            continue
+
         try:
             df = pd.read_csv(f, encoding="cp932")
         except UnicodeDecodeError:
             df = pd.read_csv(f, encoding="utf-8")
 
-        col_name = df.columns[1]   # 商品名
-        col_sales = df.columns[3]  # 販売総売上
+        col_name = df.columns[1]
+        col_sales = df.columns[3]
 
         for _, row in df.iterrows():
             name = str(row[col_name])
@@ -125,43 +153,14 @@ def load_product_sales() -> pd.DataFrame:
             sales = pd.to_numeric(row[col_sales], errors="coerce")
             if pd.isna(sales) or sales <= 0:
                 continue
-
-            if start_dt == end_dt:
-                records.append({"日付": start_dt, "カテゴリー": cat, "売上": sales})
-            else:
-                days = (end_dt - start_dt).days + 1
-                daily = sales / days
-                for d in range(days):
-                    records.append({
-                        "日付": start_dt + datetime.timedelta(days=d),
-                        "カテゴリー": cat, "売上": daily,
-                    })
+            records.append({"日付": start_dt, "カテゴリー": cat, "売上": sales})
 
     if not records:
         return pd.DataFrame()
     rdf = pd.DataFrame(records)
     pivot = rdf.groupby(["日付", "カテゴリー"])["売上"].sum().reset_index()
     result = pivot.pivot(index="日付", columns="カテゴリー", values="売上").fillna(0)
-    result["日次合計_実績"] = result.sum(axis=1)
     return result.reset_index()
-
-
-def load_sales_summary() -> pd.DataFrame:
-    """日次合計のフォールバック用（売上集計_*.csv）"""
-    files = sorted(glob.glob(str(BASE_DIR / "売上集計_*.csv")))
-    dfs = []
-    for f in files:
-        try:
-            dfs.append(pd.read_csv(f, encoding="cp932"))
-        except UnicodeDecodeError:
-            dfs.append(pd.read_csv(f, encoding="utf-8"))
-    if not dfs:
-        return pd.DataFrame()
-    combined = pd.concat(dfs, ignore_index=True)
-    col0, col1 = combined.columns[0], combined.columns[1]
-    combined["日付"] = pd.to_datetime(combined[col0], format="%Y%m%d").dt.date
-    combined["売上"] = pd.to_numeric(combined[col1], errors="coerce")
-    return combined[["日付", "売上"]].dropna()
 
 
 # ─── HTMLヘルパー ───
@@ -473,26 +472,23 @@ def main() -> Path:
         print("[エラー] 4月日別売上目標.xlsx の読み込みに失敗", file=sys.stderr)
         sys.exit(1)
 
+    daily_sales = load_daily_sales()
+    if daily_sales.empty:
+        print("[エラー] 実績データが見つかりません", file=sys.stderr)
+        sys.exit(1)
+    targets = targets.merge(
+        daily_sales.rename(columns={"売上": "実績"}), on="日付", how="left",
+    )
+
     product_sales = load_product_sales()
     has_product_data = not product_sales.empty
-
     if has_product_data:
-        ps = product_sales[["日付", "日次合計_実績"]].rename(columns={"日次合計_実績": "実績"})
-        targets = targets.merge(ps, on="日付", how="left")
         for cat in CATEGORIES:
             if cat in product_sales.columns:
                 col_map = product_sales[["日付", cat]].rename(columns={cat: f"{cat}_実績"})
                 targets = targets.merge(col_map, on="日付", how="left")
             else:
                 targets[f"{cat}_実績"] = 0.0
-    else:
-        summary_sales = load_sales_summary()
-        if summary_sales.empty:
-            print("[エラー] 実績データが見つかりません", file=sys.stderr)
-            sys.exit(1)
-        targets = targets.merge(
-            summary_sales.rename(columns={"売上": "実績"}), on="日付", how="left",
-        )
 
     report_date = get_report_date()
     html = build_html(targets, has_product_data, report_date)

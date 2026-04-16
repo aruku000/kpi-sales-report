@@ -12,10 +12,10 @@ from pathlib import Path
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+from googleapiclient.http import MediaIoBaseDownload
 
 BASE_DIR = Path(__file__).parent
-SCOPES = ["https://www.googleapis.com/auth/drive"]
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 
 def get_drive_service():
@@ -48,35 +48,6 @@ def download_csvs(folder_id: str):
             _, done = downloader.next_chunk()
         dest.write_bytes(buf.getvalue())
         print(f"[OK] {f['name']} ({len(buf.getvalue()):,} bytes)")
-
-
-def upload_html(file_path: Path, folder_id: str) -> str:
-    """HTMLファイルをGoogle Driveにアップロードし、閲覧用URLを返す。
-    同名ファイルがあれば上書きする。"""
-    service = get_drive_service()
-    name = file_path.name
-
-    query = f"'{folder_id}' in parents and name='{name}' and trashed=false"
-    existing = service.files().list(q=query, fields="files(id)").execute().get("files", [])
-
-    media = MediaFileUpload(str(file_path), mimetype="text/html")
-
-    if existing:
-        file_id = existing[0]["id"]
-        service.files().update(fileId=file_id, media_body=media).execute()
-    else:
-        metadata = {"name": name, "parents": [folder_id]}
-        result = service.files().create(body=metadata, media_body=media, fields="id").execute()
-        file_id = result["id"]
-
-    service.permissions().create(
-        fileId=file_id,
-        body={"type": "anyone", "role": "reader"},
-    ).execute()
-
-    url = f"https://drive.google.com/file/d/{file_id}/view"
-    print(f"[OK] HTMLアップロード: {url}")
-    return url
 
 
 def main():
