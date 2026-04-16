@@ -1,0 +1,30 @@
+name: 日次売上レポート配信
+
+on:
+  schedule:
+    - cron: "0 12 * * *"   # 12:00 UTC = 21:00 JST
+  workflow_dispatch:         # 手動実行用
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download CSVs from Google Drive
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+        run: python download_data.py
+
+      - name: Generate report and send email
+        env:
+          GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
+        run: python send_report.py

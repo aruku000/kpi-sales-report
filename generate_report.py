@@ -17,9 +17,8 @@ import openpyxl
 import pandas as pd
 
 # ─── パス ───
-BASE_DIR = Path(__file__).parent                                # 直売所売上/
-KPI_DIR = BASE_DIR.parent / "20260310_KPI"                      # KPIプロジェクトフォルダ
-TARGET_FILE = KPI_DIR / "4月日別売上目標.xlsx"
+BASE_DIR = Path(__file__).parent
+TARGET_FILE = BASE_DIR / "4月日別売上目標.xlsx"
 OUTPUT_HTML = BASE_DIR / "report_template.html"
 
 # ─── カテゴリー ───
