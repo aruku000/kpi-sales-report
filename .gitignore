@@ -1,0 +1,28 @@
+# Generated output
+report_template.html
+report_screenshot.png
+
+# CSV data (fetched via Drive API at runtime)
+*.csv
+
+# Credentials
+service_account.json
+*.pem
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Excel temp
+~$*.xlsx
