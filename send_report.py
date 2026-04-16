@@ -64,6 +64,10 @@ def build_body(summary: dict, report_url: str = "") -> str:
 
     lines = [
         f"【直売所 日次売上レポート】{rd.strftime('%Y/%m/%d')}（{wd}）",
+    ]
+    if report_url:
+        lines.append(f"詳細レポート: {report_url}")
+    lines += [
         "",
         "■本日",
         f" 実績 {t['actual']:>10,.0f}円 / 目標 {t['target']:>10,.0f}円 （{t['pct']:.0f}%）",
@@ -75,8 +79,6 @@ def build_body(summary: dict, report_url: str = "") -> str:
         f" 実績 {m['actual']:>10,.0f}円 / 目標 {m['target']:>10,.0f}円 （{m['pct']:.0f}%）",
         f" {m['days_elapsed']}日経過 / 30日",
     ]
-    if report_url:
-        lines += ["", "▼詳細レポート", report_url]
     return "\n".join(lines)
 
 
