@@ -379,7 +379,7 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
                 f'<div class="day-label" style="color:#1c3f60;font-weight:700;width:auto;margin-right:4px;">'
                 f'{dt.month}/{dt.day} {wd}<span style="font-size:9px;font-weight:500;color:#7da0c0;margin-left:3px;">本日</span></div>'
                 f'<div class="day-amounts"><span class="actual">{fmt(actual)}</span> / {fmt(target)}円</div>'
-                f'<div class="pct-sm c-{cc}">{pct:.1f}%</div></div>'
+                f'<div class="pct-sm c-{cc}">{pct:.0f}%</div></div>'
             )
         else:
             h.append('<div>')
@@ -387,7 +387,7 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
                 f'<div class="day-row-top">'
                 f'<div class="day-label">{dt.month}/{dt.day} {wd}</div>'
                 f'<div class="day-amounts"><span class="actual">{fmt(actual)}</span> / {fmt(target)}円</div>'
-                f'<div class="pct-sm c-{cc}">{pct:.1f}%</div></div>'
+                f'<div class="pct-sm c-{cc}">{pct:.0f}%</div></div>'
             )
         h.append(bar(pct))
         h.append('</div>')
@@ -402,7 +402,7 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
     h.append(
         f'<div class="section"><div class="section-title">週間累計</div>'
         f'<div class="summary-row">'
-        f'<div class="pct-lg c-{wc}">{wp:.1f}%</div>'
+        f'<div class="pct-lg c-{wc}">{wp:.0f}%</div>'
         f'<div class="summary-detail">'
         f'<span class="amt">実績 {fmt(wa)}円</span> / <span>目標 {fmt(wt)}円</span><br>'
         f'<span class="sub">平日{nwd}日×{fmt(128497)}　土日{nwe}日×{fmt(262286)}</span>'
@@ -424,7 +424,7 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
                 f'<div><div class="cat-row-top">'
                 f'<div class="cat-name">{disp}</div>'
                 f'<div class="cat-amounts"><span class="actual">{fmt(ca)}</span> / {fmt(ct)}円</div>'
-                f'<div class="pct-sm c-{cc}">{cp:.1f}%</div></div>'
+                f'<div class="pct-sm c-{cc}">{cp:.0f}%</div></div>'
                 f'{bar(cp)}</div>'
             )
         h.append('</div>')
@@ -442,7 +442,7 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
         f'<div class="section">'
         f'<div class="section-title">月間累計（4/1〜{report_date.month}/{report_date.day}）</div>'
         f'<div class="summary-row">'
-        f'<div class="pct-lg c-{mc}">{mp:.1f}%</div>'
+        f'<div class="pct-lg c-{mc}">{mp:.0f}%</div>'
         f'<div class="summary-detail">'
         f'<span class="amt">実績 {fmt(ma)}円</span> / <span>目標 {fmt(mt)}円</span><br>'
         f'<span class="sub">{de}日経過 / 30日　残{dr}日</span>'
