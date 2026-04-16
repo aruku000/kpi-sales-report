@@ -19,6 +19,7 @@ from email.header import Header
 from email.mime.text import MIMEText
 from pathlib import Path
 
+import download_data
 import generate_report
 
 # ==============================================================
@@ -32,9 +33,6 @@ TO_ADDRESSES   = [                                   # 送信先（複数可）
     "asuka.sarana@gmail.com",
     "maruyama2899m@gmail.com",
 ]
-
-# 詳細HTMLレポートのURL（Google Drive連携実装後に埋める。空ならURL行を出さない）
-REPORT_URL = ""
 
 BASE_DIR = Path(__file__).parent
 CSV_DIR  = BASE_DIR
@@ -70,7 +68,7 @@ def find_today_csv() -> Path | None:
     return None
 
 
-def build_body(summary: dict) -> str:
+def build_body(summary: dict, report_url: str = "") -> str:
     """数値要約 + 詳細URL のプレーンテキスト本文を組み立てる"""
     rd = summary["report_date"]
     wd = summary["weekday"]
@@ -89,8 +87,8 @@ def build_body(summary: dict) -> str:
         f" 実績 {m['actual']:>10,.0f}円 / 目標 {m['target']:>10,.0f}円 （{m['pct']:.1f}%）",
         f" {m['days_elapsed']}日経過 / 30日",
     ]
-    if REPORT_URL:
-        lines += ["", "▼詳細レポート", REPORT_URL]
+    if report_url:
+        lines += ["", "▼詳細レポート", report_url]
     return "\n".join(lines)
 
 
@@ -128,16 +126,24 @@ def main():
     print(f"[OK] CSV確認: {csv_file.name}")
 
     try:
-        _, summary = generate_report.main()
+        html_path, summary = generate_report.main()
     except SystemExit:
         raise
     except Exception as e:
         print(f"[エラー] レポート生成失敗: {e}")
         sys.exit(1)
 
+    report_url = ""
+    folder_id = os.environ.get("DRIVE_FOLDER_ID")
+    if folder_id:
+        try:
+            report_url = download_data.upload_html(html_path, folder_id)
+        except Exception as e:
+            print(f"[警告] HTMLアップロード失敗（メール送信は続行）: {e}")
+
     rd = summary["report_date"]
     subject = f"【直売所 日次売上レポート】{rd.strftime('%Y/%m/%d')}"
-    body = build_body(summary)
+    body = build_body(summary, report_url)
     print("--- 本文プレビュー ---")
     print(body)
     print("----------------------")

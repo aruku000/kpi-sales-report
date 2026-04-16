@@ -27,4 +27,6 @@ jobs:
       - name: Generate report and send email
         env:
           GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
         run: python send_report.py

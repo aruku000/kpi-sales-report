@@ -16,6 +16,16 @@ from pathlib import Path
 import openpyxl
 import pandas as pd
 
+JST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+def get_report_date() -> datetime.date:
+    """21:00-23:59は当日、00:00-20:59は前日をレポート対象日とする"""
+    now = datetime.datetime.now(JST)
+    if now.hour >= 21:
+        return now.date()
+    return now.date() - datetime.timedelta(days=1)
+
 # ─── パス ───
 BASE_DIR = Path(__file__).parent
 TARGET_FILE = BASE_DIR / "4月日別売上目標.xlsx"
@@ -280,14 +290,14 @@ body {
 """
 
 
-def build_summary(targets: pd.DataFrame) -> dict:
+def build_summary(targets: pd.DataFrame, report_date: datetime.date = None) -> dict:
     """本日/週間/月間の実績・目標・達成率を dict で返す。
     send_report.py のテキスト本文生成にも使う。"""
-    available = targets[targets["実績"].notna()]
+    if report_date is None:
+        report_date = get_report_date()
+    available = targets[(targets["実績"].notna()) & (targets["日付"] <= report_date)]
     if available.empty:
         raise RuntimeError("実績データが目標期間内に見つかりません")
-
-    report_date = available["日付"].max()
     week_start = report_date - datetime.timedelta(days=report_date.weekday())
 
     today_row = available[available["日付"] == report_date].iloc[0]
@@ -322,12 +332,12 @@ def build_summary(targets: pd.DataFrame) -> dict:
     }
 
 
-def build_html(targets: pd.DataFrame, has_product_data: bool) -> str:
-    available = targets[targets["実績"].notna()]
+def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datetime.date = None) -> str:
+    if report_date is None:
+        report_date = get_report_date()
+    available = targets[(targets["実績"].notna()) & (targets["日付"] <= report_date)]
     if available.empty:
         raise RuntimeError("実績データが目標期間内に見つかりません")
-
-    report_date = available["日付"].max()
     report_wd = WEEKDAYS_JA[report_date.weekday()]
 
     week_start = report_date - datetime.timedelta(days=report_date.weekday())
@@ -484,9 +494,10 @@ def main() -> Path:
             summary_sales.rename(columns={"売上": "実績"}), on="日付", how="left",
         )
 
-    html = build_html(targets, has_product_data)
+    report_date = get_report_date()
+    html = build_html(targets, has_product_data, report_date)
     OUTPUT_HTML.write_text(html, encoding="utf-8")
-    summary = build_summary(targets)
+    summary = build_summary(targets, report_date)
     print(f"[OK] HTML生成: {OUTPUT_HTML}  ({len(html):,} bytes)")
     return OUTPUT_HTML, summary
 
