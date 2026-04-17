@@ -397,15 +397,12 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
     wa, wt = week_data["実績"].sum(), week_data["日次合計"].sum()
     wp = wa / wt * 100 if wt > 0 else 0
     wc = color_class(wp)
-    nwd = len(week_data[week_data["類型"] == "平日"])
-    nwe = len(week_data[week_data["類型"] == "土日祝日"])
     h.append(
         f'<div class="section"><div class="section-title">週間累計</div>'
         f'<div class="summary-row">'
         f'<div class="pct-lg c-{wc}">{wp:.0f}%</div>'
         f'<div class="summary-detail">'
-        f'<span class="amt">実績 {fmt(wa)}円</span> / <span>目標 {fmt(wt)}円</span><br>'
-        f'<span class="sub">平日{nwd}日×{fmt(128497)}　土日{nwe}日×{fmt(262286)}</span>'
+        f'<span class="amt">実績 {fmt(wa)}円</span> / <span>目標 {fmt(wt)}円</span>'
         f'</div></div>'
         f'{bar(wp, 8)}{scale_html()}</div>'
     )
