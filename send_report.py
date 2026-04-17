@@ -31,6 +31,7 @@ TO_ADDRESSES   = [                                   # 送信先（複数可）
     "ryo.yamada@visional.inc",
     "asuka.sarana@gmail.com",
     "maruyama2899m@gmail.com",
+    "ryo.a.yamada@gmail.com",
 ]
 
 BASE_DIR = Path(__file__).parent
