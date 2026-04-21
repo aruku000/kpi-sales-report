@@ -492,7 +492,7 @@ def main() -> Path:
     OUTPUT_HTML.write_text(html, encoding="utf-8")
     summary = build_summary(targets, report_date)
     print(f"[OK] HTML生成: {OUTPUT_HTML}  ({len(html):,} bytes)")
-    return OUTPUT_HTML, summary
+    return OUTPUT_HTML, summary, targets, has_product_data
 
 
 if __name__ == "__main__":

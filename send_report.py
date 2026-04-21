@@ -20,6 +20,7 @@ from email.mime.text import MIMEText
 from pathlib import Path
 
 import generate_report
+import generate_slide
 
 # ==============================================================
 # CONFIG（ここを編集してください）
@@ -115,12 +116,17 @@ def main():
         sys.exit(1)
 
     try:
-        html_path, summary = generate_report.main()
+        html_path, summary, targets, has_product = generate_report.main()
     except SystemExit:
         raise
     except Exception as e:
         print(f"[エラー] レポート生成失敗: {e}")
         sys.exit(1)
+
+    try:
+        generate_slide.main(targets, has_product, summary["report_date"])
+    except Exception as e:
+        print(f"[警告] スライド生成失敗（メール送信は継続）: {e}")
 
     report_url = os.environ.get("REPORT_URL", "")
 

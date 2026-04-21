@@ -33,6 +33,7 @@ jobs:
         env:
           GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
           REPORT_URL: "https://aruku000.github.io/kpi-sales-report/"
+          SLIDES_PRESENTATION_ID: ${{ secrets.SLIDES_PRESENTATION_ID }}
         run: python send_report.py
 
       - name: Deploy HTML to GitHub Pages
