@@ -304,6 +304,9 @@ def build_summary(targets: pd.DataFrame, report_date: datetime.date = None) -> d
     available = targets[(targets["実績"].notna()) & (targets["日付"] <= report_date)]
     if available.empty:
         raise RuntimeError("実績データが目標期間内に見つかりません")
+    if report_date not in available["日付"].values:
+        report_date = available["日付"].max()
+        print(f"[警告] 当日データなし。最新データ日付 ({report_date}) を使用")
     week_start = report_date - datetime.timedelta(days=report_date.weekday())
 
     today_row = available[available["日付"] == report_date].iloc[0]
@@ -345,6 +348,8 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
     available = targets[(targets["実績"].notna()) & (targets["日付"] <= report_date)]
     if available.empty:
         raise RuntimeError("実績データが目標期間内に見つかりません")
+    if report_date not in available["日付"].values:
+        report_date = available["日付"].max()
     report_wd = WEEKDAYS_JA[report_date.weekday()]
 
     week_start = report_date - datetime.timedelta(days=report_date.weekday())
