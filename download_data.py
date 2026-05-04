@@ -30,14 +30,18 @@ def get_drive_service():
 
 def download_csvs(folder_id: str):
     service = get_drive_service()
-    query = f"'{folder_id}' in parents and mimeType='text/csv' and trashed=false"
-    results = service.files().list(q=query, fields="files(id, name)").execute()
+    # mimeTypeは text/csv / text/plain どちらもあり得るためファイル名で絞る
+    query = f"'{folder_id}' in parents and name contains '.csv' and trashed=false"
+    results = service.files().list(
+        q=query, fields="files(id, name)", pageSize=200
+    ).execute()
     files = results.get("files", [])
 
     if not files:
         print("[警告] CSVファイルが見つかりませんでした")
         return
 
+    print(f"[INFO] {len(files)} 件のCSVを検出")
     for f in files:
         dest = BASE_DIR / f["name"]
         request = service.files().get_media(fileId=f["id"])
