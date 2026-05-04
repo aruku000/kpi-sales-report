@@ -6,6 +6,7 @@ send_report.py の前段として実行される想定。
 依存: pandas, openpyxl （Streamlit非依存）
 """
 
+import calendar
 import datetime
 import glob
 import os
@@ -28,7 +29,7 @@ def get_report_date() -> datetime.date:
 
 # ─── パス ───
 BASE_DIR = Path(__file__).parent
-TARGET_FILE = BASE_DIR / "4月日別売上目標.xlsx"
+TARGET_FILE = BASE_DIR / "月別売上目標.xlsx"
 OUTPUT_HTML = BASE_DIR / "report_template.html"
 
 # ─── カテゴリー ───
@@ -68,10 +69,16 @@ def classify_product(name: str):
 
 # ─── データ読み込み ───
 def load_targets() -> pd.DataFrame:
+    report_date = get_report_date()
+    sheet_name = f"{report_date.month}月"
     wb = openpyxl.load_workbook(TARGET_FILE, data_only=True)
-    ws = wb.active
+    if sheet_name not in wb.sheetnames:
+        print(f"[エラー] シート '{sheet_name}' が見つかりません: {TARGET_FILE}", file=sys.stderr)
+        sys.exit(1)
+    ws = wb[sheet_name]
+    days_in_month = calendar.monthrange(report_date.year, report_date.month)[1]
     rows = []
-    for row in ws.iter_rows(min_row=6, max_row=35, values_only=True):
+    for row in ws.iter_rows(min_row=6, max_row=5 + days_in_month, values_only=True):
         if row[0] is None:
             continue
         dt = row[0]
@@ -327,6 +334,7 @@ def build_summary(targets: pd.DataFrame, report_date: datetime.date = None) -> d
         "month": {
             **block(month_data["実績"].sum(), month_data["日次合計"].sum()),
             "days_elapsed": len(month_data),
+            "days_in_month": calendar.monthrange(report_date.year, report_date.month)[1],
         },
     }
 
@@ -434,15 +442,16 @@ def build_html(targets: pd.DataFrame, has_product_data: bool, report_date: datet
     mp = ma / mt * 100 if mt > 0 else 0
     mc = color_class(mp)
     de = len(month_data)
-    dr = 30 - de
+    days_in_month = calendar.monthrange(report_date.year, report_date.month)[1]
+    dr = days_in_month - de
     h.append(
         f'<div class="section">'
-        f'<div class="section-title">月間累計（4/1〜{report_date.month}/{report_date.day}）</div>'
+        f'<div class="section-title">月間累計（{report_date.month}/1〜{report_date.month}/{report_date.day}）</div>'
         f'<div class="summary-row">'
         f'<div class="pct-lg c-{mc}">{mp:.0f}%</div>'
         f'<div class="summary-detail">'
         f'<span class="amt">実績 {fmt(ma)}円</span> / <span>目標 {fmt(mt)}円</span><br>'
-        f'<span class="sub">{de}日経過 / 30日　残{dr}日</span>'
+        f'<span class="sub">{de}日経過 / {days_in_month}日　残{dr}日</span>'
         f'</div></div>'
         f'{bar(mp, 8)}{scale_html()}</div>'
     )
@@ -466,7 +475,7 @@ def main() -> Path:
 
     targets = load_targets()
     if targets.empty:
-        print("[エラー] 4月日別売上目標.xlsx の読み込みに失敗", file=sys.stderr)
+        print("[エラー] 月別売上目標.xlsx の読み込みに失敗", file=sys.stderr)
         sys.exit(1)
 
     daily_sales = load_daily_sales()

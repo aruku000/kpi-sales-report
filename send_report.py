@@ -77,9 +77,9 @@ def build_body(summary: dict, report_url: str = "") -> str:
         f"■週間累計（{w['start'].month}/{w['start'].day}〜{w['end'].month}/{w['end'].day}）",
         f" 実績 {w['actual']:>10,.0f}円 / 目標 {w['target']:>10,.0f}円 （{w['pct']:.0f}%）",
         "",
-        f"■月間累計（4/1〜{rd.month}/{rd.day}）",
+        f"■月間累計（{rd.month}/1〜{rd.month}/{rd.day}）",
         f" 実績 {m['actual']:>10,.0f}円 / 目標 {m['target']:>10,.0f}円 （{m['pct']:.0f}%）",
-        f" {m['days_elapsed']}日経過 / 30日",
+        f" {m['days_elapsed']}日経過 / {m['days_in_month']}日",
     ]
     return "\n".join(lines)
 
