@@ -153,7 +153,10 @@ def load_product_sales() -> pd.DataFrame:
         col_sales = df.columns[3]
 
         for _, row in df.iterrows():
-            name = str(row[col_name])
+            name_raw = row[col_name]
+            if pd.isna(name_raw):
+                continue
+            name = str(name_raw)
             cat = classify_product(name)
             if cat is None:
                 continue
