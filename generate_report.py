@@ -115,7 +115,7 @@ def load_monthly_targets() -> list:
         year = fy_start_year if month_num >= 4 else fy_start_year + 1
         total = 0.0
         for row in ws.iter_rows(min_row=6, values_only=True):
-            if row[0] is None:
+            if not isinstance(row[0], datetime.datetime):
                 break
             val = row[13]
             if val is not None:
