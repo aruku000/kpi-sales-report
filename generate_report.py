@@ -147,19 +147,26 @@ def load_daily_sales() -> pd.DataFrame:
     if not files:
         return pd.DataFrame()
 
-    dfs = []
-    for f in files:
+    # 更新日時が新しい順に読み込み、同じ日付が複数ファイルに重複している場合は
+    # 最新ファイルの値のみを採用する（合算すると二重計上になるため）
+    files_by_mtime = sorted(files, key=os.path.getmtime, reverse=True)
+
+    frames = []
+    for f in files_by_mtime:
         try:
             df = pd.read_csv(f, encoding="cp932")
         except UnicodeDecodeError:
             df = pd.read_csv(f, encoding="utf-8")
-        dfs.append(df)
+        col_date, col_sales = df.columns[0], df.columns[1]
+        df["日付"] = pd.to_datetime(df[col_date], errors="coerce").dt.date
+        df["売上"] = pd.to_numeric(df[col_sales], errors="coerce")
+        frames.append(df[["日付", "売上"]].dropna())
 
-    combined = pd.concat(dfs, ignore_index=True)
-    col_date, col_sales = combined.columns[0], combined.columns[1]
-    combined["日付"] = pd.to_datetime(combined[col_date], errors="coerce").dt.date
-    combined["売上"] = pd.to_numeric(combined[col_sales], errors="coerce")
-    result = combined[["日付", "売上"]].dropna()
+    combined = pd.concat(frames, ignore_index=True)
+    dup_dates = sorted(combined[combined.duplicated(subset="日付", keep=False)]["日付"].unique())
+    if dup_dates:
+        print(f"[警告] 日別売上データが複数ファイルで重複しています。最新ファイルの値を採用し合算はしません: {dup_dates}")
+    result = combined.drop_duplicates(subset="日付", keep="first")
     result = result[result["売上"] > 0]
     return result
 
@@ -177,7 +184,9 @@ def load_product_sales() -> pd.DataFrame:
     if not files:
         return pd.DataFrame()
 
-    records = []
+    # 同じ日付を指すファイルが複数存在する場合（別命名規則や再アップロードによる
+    # 重複）、最終更新が最も新しいものだけを採用する（合算すると二重計上になる）
+    by_date: dict[datetime.date, str] = {}
     for f in files:
         basename = os.path.basename(f)
         m = re.search(r"(\d{8})-(\d{8})", basename)
@@ -185,10 +194,26 @@ def load_product_sales() -> pd.DataFrame:
             continue
         start_dt = datetime.datetime.strptime(m.group(1), "%Y%m%d").date()
         end_dt = datetime.datetime.strptime(m.group(2), "%Y%m%d").date()
-
         if start_dt != end_dt:
             continue
 
+        prev = by_date.get(start_dt)
+        if prev is None:
+            by_date[start_dt] = f
+        elif os.path.getmtime(f) > os.path.getmtime(prev):
+            print(
+                f"[警告] {start_dt} の商品別売上CSVが重複しています。"
+                f"最新ファイルを採用: {os.path.basename(f)}（除外: {os.path.basename(prev)}）"
+            )
+            by_date[start_dt] = f
+        else:
+            print(
+                f"[警告] {start_dt} の商品別売上CSVが重複しています。"
+                f"最新ファイルを採用: {os.path.basename(prev)}（除外: {basename}）"
+            )
+
+    records = []
+    for start_dt, f in by_date.items():
         try:
             df = pd.read_csv(f, encoding="cp932")
         except UnicodeDecodeError:
